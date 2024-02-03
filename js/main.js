@@ -95,7 +95,6 @@ function addClickEvents() {
     });
   });
 }
-
 // Function to load and display listing details in the modal
 function loadListingDetails(listingId) {
   const detailsUrl = `/api/listings/${listingId}`;
@@ -110,16 +109,20 @@ function loadListingDetails(listingId) {
       // Create and append the image element
       const imageElement = document.createElement("img");
       imageElement.id = "photo";
-      imageElement.onerror =
-        "this.onerror=null;this.src='https://placehold.co/600x400?text=Photo+Not+Available'";
+      imageElement.onerror = function () {
+        this.onerror = null; // Prevent infinite loop in case the placeholder also fails
+        this.src = "https://placehold.co/600x400?text=Photo+Not+Available";
+      };
       imageElement.classList.add("img-fluid", "w-100");
       imageElement.src =
-        data.images && data.images.length > 0
-          ? data.images[0].url
+        data.images &&
+        data.images.picture_url &&
+        data.images.picture_url.length > 0
+          ? data.images.picture_url
           : "https://placehold.co/600x400?text=Photo+Not+Available";
       modalBody.appendChild(imageElement);
 
-      // // Add line breaks
+      // Add line breaks
       modalBody.appendChild(document.createElement("br"));
       modalBody.appendChild(document.createElement("br"));
 
@@ -136,7 +139,8 @@ function loadListingDetails(listingId) {
       modalBody.appendChild(document.createElement("br"));
 
       // Create and append the price, room type, bed type, and beds information
-      modalBody.innerHTML += `
+      const detailsText = document.createElement("div");
+      detailsText.innerHTML = `
         <strong>Price:</strong> ${
           data.price ? `$${data.price.toFixed(2)}` : "N/A"
         }<br>
@@ -145,6 +149,7 @@ function loadListingDetails(listingId) {
           data.bed_type ? `${data.bed_type} (${data.beds || 1})` : "N/A"
         }<br><br>
       `;
+      modalBody.appendChild(detailsText);
 
       // Show the modal
       const modal = new bootstrap.Modal(
